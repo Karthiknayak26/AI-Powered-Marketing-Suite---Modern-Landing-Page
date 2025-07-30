@@ -48,7 +48,7 @@
 
 ## AI vs Manual Work Split
 
-### AI-Generated (70%)
+### AI-Generated (60%)
 - **Project Structure**: Complete file organization and component architecture
 - **Component Implementation**: All React components with TypeScript interfaces
 - **Styling System**: Tailwind CSS configuration and custom utilities
@@ -57,7 +57,7 @@
 - **Responsive Design**: Mobile-first responsive patterns and breakpoints
 - **Documentation**: README.md and project documentation
 
-### Manual Coding (20%)
+### Manual Coding (30%)
 - **Custom Logic**: Specific business logic and data structures
 - **Design Decisions**: Color palette and visual design choices
 - **Content Creation**: Copywriting and content organization

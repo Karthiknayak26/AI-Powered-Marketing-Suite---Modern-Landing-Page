@@ -26,6 +26,14 @@
     @apply bg-dark-800/50 backdrop-blur-md border border-dark-600/30 dark:bg-gray-800/50 dark:border-gray-700/30;
   }
 
+  .glassmorphism {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl hover:bg-white/15 hover:border-white/30 hover:shadow-2xl dark:bg-gray-800/20 dark:border-gray-700/30 dark:hover:bg-gray-700/30 dark:hover:border-gray-600/40 dark:hover:shadow-green-500/25;
+  }
+
+  .glassmorphism-gradient {
+    @apply bg-gradient-to-br from-white/10 via-white/5 to-white/10 backdrop-blur-xl border border-white/20 shadow-xl hover:from-white/15 hover:via-white/10 hover:to-white/15 hover:border-white/30 hover:shadow-2xl dark:from-gray-800/20 dark:via-gray-800/10 dark:to-gray-800/20 dark:border-gray-700/30 dark:hover:from-gray-700/30 dark:hover:via-gray-700/20 dark:hover:to-gray-700/30 dark:hover:border-gray-600/40 dark:hover:shadow-green-500/25;
+  }
+
   .gradient-text {
     @apply bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent;
   }

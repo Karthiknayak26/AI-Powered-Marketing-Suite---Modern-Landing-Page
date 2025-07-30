@@ -46,6 +46,93 @@ const FAQ: React.FC = () => {
     setOpenIndex(openIndex === index ? null : index)
   }
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 0.95
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  }
+
+  const contentVariants = {
+    hidden: {
+      height: 0,
+      opacity: 0,
+      scale: 0.95
+    },
+    visible: {
+      height: "auto",
+      opacity: 1,
+      scale: 1,
+      transition: {
+        height: {
+          duration: 0.4,
+          ease: "easeInOut"
+        },
+        opacity: {
+          duration: 0.3,
+          delay: 0.1
+        },
+        scale: {
+          duration: 0.3,
+          delay: 0.1
+        }
+      }
+    },
+    exit: {
+      height: 0,
+      opacity: 0,
+      scale: 0.95,
+      transition: {
+        height: {
+          duration: 0.3,
+          ease: "easeInOut"
+        },
+        opacity: {
+          duration: 0.2
+        },
+        scale: {
+          duration: 0.2
+        }
+      }
+    }
+  }
+
+  const iconVariants = {
+    closed: {
+      rotate: 0,
+      scale: 1
+    },
+    open: {
+      rotate: 180,
+      scale: 1.1,
+      transition: {
+        duration: 0.3,
+        ease: "easeInOut"
+      }
+    }
+  }
+
   return (
     <section id="faq" className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,52 +158,70 @@ const FAQ: React.FC = () => {
         </motion.div>
 
         {/* FAQ Items */}
-        <div className="space-y-4">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="space-y-4"
+        >
           {faqs.map((faq, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:shadow-green-500/25"
+              variants={itemVariants}
+              className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] dark:bg-gray-800 dark:border-gray-700 dark:hover:shadow-green-500/25"
             >
-              <button
+              <motion.button
                 onClick={() => toggleFAQ(index)}
-                className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors dark:hover:bg-gray-700"
+                className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors dark:hover:bg-gray-700 group"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
-                <h3 className="text-lg font-semibold text-gray-900 pr-4 dark:text-white">
+                <h3 className="text-lg font-semibold text-gray-900 pr-4 dark:text-white group-hover:text-primary-600 dark:group-hover:text-green-400 transition-colors">
                   {faq.question}
                 </h3>
-                <div className="flex-shrink-0">
+                <motion.div
+                  className="flex-shrink-0"
+                  variants={iconVariants}
+                  animate={openIndex === index ? "open" : "closed"}
+                >
                   {openIndex === index ? (
                     <Minus className="w-5 h-5 text-primary-500 dark:text-green-400" />
                   ) : (
-                    <Plus className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                    <Plus className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-primary-500 dark:group-hover:text-green-400 transition-colors" />
                   )}
-                </div>
-              </button>
+                </motion.div>
+              </motion.button>
 
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {openIndex === index && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    variants={contentVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
                     className="overflow-hidden"
                   >
                     <div className="px-6 pb-6">
-                      <p className="text-gray-600 leading-relaxed dark:text-gray-300">
+                      <motion.p
+                        className="text-gray-600 leading-relaxed dark:text-gray-300"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{
+                          duration: 0.3,
+                          delay: 0.2
+                        }}
+                      >
                         {faq.answer}
-                      </p>
+                      </motion.p>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Contact CTA */}
         <motion.div
@@ -134,12 +239,20 @@ const FAQ: React.FC = () => {
               Our support team is here to help you get the most out of ADmyBRAND AI Suite.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <button className="button-primary">
+              <motion.button
+                className="button-primary"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Contact Support
-              </button>
-              <button className="button-secondary">
+              </motion.button>
+              <motion.button
+                className="button-secondary"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Schedule a Demo
-              </button>
+              </motion.button>
             </div>
           </div>
         </motion.div>

@@ -1,16 +1,79 @@
 'use client'
 
-import React from 'react'
-import { motion } from 'framer-motion'
+import React, { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { DemoVideo } from '@/components/ui/DemoVideo'
 import { Play, ArrowRight, Sparkles, Zap, Target, TrendingUp, Users } from 'lucide-react'
 
 const Hero: React.FC = () => {
+  const containerRef = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  })
+
+  // Parallax transforms for background elements
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
+  const backgroundOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.3])
+
+  // Responsive animation variants
+  const headerVariants = {
+    hidden: {
+      opacity: 0,
+      x: -50 // Reduced movement for mobile
+    },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  }
+
+  const subtextVariants = {
+    hidden: {
+      opacity: 0,
+      x: 50 // Reduced movement for mobile
+    },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut"
+      }
+    }
+  }
+
+  const ctaVariants = {
+    hidden: {
+      opacity: 0,
+      scale: 0.9,
+      y: 20
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        type: "spring",
+        stiffness: 200,
+        damping: 15
+      }
+    }
+  }
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-bg">
-      {/* Background Elements */}
-      <div className="absolute inset-0">
+    <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-bg">
+      {/* Background Elements with Parallax */}
+      <motion.div
+        className="absolute inset-0"
+        style={{ y: backgroundY, opacity: backgroundOpacity }}
+      >
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary-300/20 rounded-full blur-3xl animate-float dark:bg-green-400/20" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary-300/20 rounded-full blur-3xl animate-float dark:bg-green-400/20" style={{ animationDelay: '2s' }} />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary-200/10 rounded-full blur-3xl animate-float dark:bg-green-300/10" style={{ animationDelay: '4s' }} />
@@ -41,7 +104,7 @@ const Hero: React.FC = () => {
           }}
           className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-primary-400/30 rounded-full dark:bg-green-400/30"
         />
-      </div>
+      </motion.div>
 
       {/* Floating UI Elements - Background Only */}
       <motion.div
@@ -126,32 +189,34 @@ const Hero: React.FC = () => {
           </span>
         </motion.div>
 
-        {/* Main Headline */}
+        {/* Main Headline - Fades in from left */}
         <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          variants={headerVariants}
+          initial="hidden"
+          animate="visible"
           className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight dark:text-white"
         >
           Transform Your
           <span className="block text-gradient"> Brand with AI</span>
         </motion.h1>
 
-        {/* Subtext */}
+        {/* Subtext - Fades in from right */}
         <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          variants={subtextVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.2 }}
           className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed dark:text-gray-300"
         >
           Create stunning campaigns, analyze performance, and grow your brand with our comprehensive AI-powered marketing suite.
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons - Bounces in after 0.5s delay */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
+          variants={ctaVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.6 }}
           className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12"
         >
           <Button size="lg" className="group">
@@ -166,7 +231,7 @@ const Hero: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-5xl mx-auto"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto"
         >
           <motion.div
             className="text-center group"
@@ -174,12 +239,12 @@ const Hero: React.FC = () => {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div
-              className="text-3xl md:text-4xl font-bold text-gradient mb-2"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold text-gradient mb-2"
               whileHover={{ scale: 1.1 }}
             >
               10K+
             </motion.div>
-            <div className="text-gray-600 dark:text-gray-400">Active Users</div>
+            <div className="text-sm md:text-base text-gray-600 dark:text-gray-400">Active Users</div>
           </motion.div>
           <motion.div
             className="text-center group"
@@ -187,12 +252,12 @@ const Hero: React.FC = () => {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div
-              className="text-3xl md:text-4xl font-bold text-gradient mb-2"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold text-gradient mb-2"
               whileHover={{ scale: 1.1 }}
             >
               500%
             </motion.div>
-            <div className="text-gray-600 dark:text-gray-400">ROI Increase</div>
+            <div className="text-sm md:text-base text-gray-600 dark:text-gray-400">ROI Increase</div>
           </motion.div>
           <motion.div
             className="text-center group"
@@ -200,12 +265,12 @@ const Hero: React.FC = () => {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div
-              className="text-3xl md:text-4xl font-bold text-gradient mb-2"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold text-gradient mb-2"
               whileHover={{ scale: 1.1 }}
             >
               24/7
             </motion.div>
-            <div className="text-gray-600 dark:text-gray-400">AI Support</div>
+            <div className="text-sm md:text-base text-gray-600 dark:text-gray-400">AI Support</div>
           </motion.div>
           <motion.div
             className="text-center group"
@@ -213,12 +278,12 @@ const Hero: React.FC = () => {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div
-              className="text-3xl md:text-4xl font-bold text-gradient mb-2"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold text-gradient mb-2"
               whileHover={{ scale: 1.1 }}
             >
               98%
             </motion.div>
-            <div className="text-gray-600 dark:text-gray-400">Satisfaction</div>
+            <div className="text-sm md:text-base text-gray-600 dark:text-gray-400">Satisfaction</div>
           </motion.div>
         </motion.div>
       </div>
