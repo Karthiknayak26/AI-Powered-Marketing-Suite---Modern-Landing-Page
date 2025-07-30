@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion, useInView, PanInfo, useAnimation } from 'framer-motion'
+import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 import { Card } from '@/components/ui/Card'
 import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react'
 
@@ -10,7 +10,6 @@ const Testimonials: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
-  const controls = useAnimation()
 
   const testimonials = [
     {
@@ -74,32 +73,34 @@ const Testimonials: React.FC = () => {
     return () => clearInterval(timer)
   }, [isHovered, isDragging, testimonials.length])
 
-  // Responsive animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
+  // Animation variants for carousel
+  const carouselVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0
+    })
   }
 
-  // Responsive card variants
-  const cardVariants = {
-    hidden: {
-      opacity: 0,
-      scale: 0.95, // Reduced scale for mobile
-      y: 20 // Reduced movement for mobile
-    },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        duration: 0.5, // Faster animation for mobile
-        ease: "easeOut"
-      }
+  const swipeConfidenceThreshold = 10000
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity
+  }
+
+  const paginate = (newDirection: number) => {
+    if (newDirection > 0) {
+      setCurrentIndex((prev) => (prev + 1) % testimonials.length)
+    } else {
+      setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
     }
   }
 
@@ -111,14 +112,14 @@ const Testimonials: React.FC = () => {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
   }
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (event: any, { offset, velocity }: PanInfo) => {
     setIsDragging(false)
-    const threshold = 30 // Reduced threshold for mobile
+    const swipe = swipePower(offset.x, velocity.x)
 
-    if (info.offset.x > threshold) {
-      prevTestimonial()
-    } else if (info.offset.x < -threshold) {
+    if (swipe < -swipeConfidenceThreshold) {
       nextTestimonial()
+    } else if (swipe > swipeConfidenceThreshold) {
+      prevTestimonial()
     }
   }
 
@@ -150,101 +151,101 @@ const Testimonials: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Horizontal Scrolling Carousel */}
-        <div className="relative max-w-6xl mx-auto">
+        {/* Animated Carousel */}
+        <div className="relative max-w-4xl mx-auto">
           <motion.div
             ref={carouselRef}
-            className="flex gap-4 md:gap-6 overflow-hidden"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="relative h-96 md:h-80"
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.1}
+            dragElastic={1}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-            animate={controls}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {testimonials.map((testimonial, index) => (
+            <AnimatePresence initial={false} mode="wait">
               <motion.div
-                key={index}
-                className="flex-shrink-0 w-full sm:w-80 md:w-96"
-                variants={cardVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                whileHover={{
-                  scale: 1.01, // Reduced scale for mobile
-                  y: -4, // Reduced movement for mobile
-                  transition: { duration: 0.2 }
+                key={currentIndex}
+                custom={1}
+                variants={carouselVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 }
                 }}
-                whileTap={{ scale: 0.98 }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={handleDragEnd}
+                className="absolute inset-0"
               >
-                <Card className="p-4 md:p-6 h-full relative group">
+                <Card className="p-6 md:p-8 h-full relative group">
                   {/* Quote icon */}
-                  <div className="absolute top-2 md:top-4 right-2 md:right-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Quote className="w-6 h-6 md:w-8 md:h-8 text-primary-500 dark:text-green-400" />
+                  <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Quote className="w-8 h-8 text-primary-500 dark:text-green-400" />
                   </div>
 
-                  <div className="flex items-center mb-4 md:mb-6">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-primary-100 dark:border-green-900/30 mr-3 md:mr-4">
+                  <div className="flex items-center mb-6">
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-primary-100 dark:border-green-900/30 mr-4">
                       <img
-                        src={testimonial.avatar}
-                        alt={testimonial.name}
+                        src={testimonials[currentIndex].avatar}
+                        alt={testimonials[currentIndex].name}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">
-                        {testimonial.name}
+                      <div className="font-semibold text-gray-900 dark:text-white text-lg md:text-xl">
+                        {testimonials[currentIndex].name}
                       </div>
-                      <div className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                        {testimonial.role} at {testimonial.company}
+                      <div className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                        {testimonials[currentIndex].role} at {testimonials[currentIndex].company}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex mb-3 md:mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 md:w-4 md:h-4 text-yellow-400 fill-current" />
+                  <div className="flex mb-4">
+                    {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-current" />
                     ))}
                   </div>
 
-                  <blockquote className="text-gray-700 dark:text-gray-200 leading-relaxed text-sm md:text-base">
-                    "{testimonial.content}"
+                  <blockquote className="text-gray-700 dark:text-gray-200 leading-relaxed text-base md:text-lg">
+                    "{testimonials[currentIndex].content}"
                   </blockquote>
                 </Card>
               </motion.div>
-            ))}
+            </AnimatePresence>
           </motion.div>
 
           {/* Navigation Buttons */}
           <motion.button
             onClick={prevTestimonial}
-            className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-200 hover:scale-110 dark:bg-gray-800 dark:hover:bg-gray-700"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-200 hover:scale-110 dark:bg-gray-800 dark:hover:bg-gray-700 z-10"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-gray-600 dark:text-gray-300" />
+            <ChevronLeft className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </motion.button>
 
           <motion.button
             onClick={nextTestimonial}
-            className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-200 hover:scale-110 dark:bg-gray-800 dark:hover:bg-gray-700"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all duration-200 hover:scale-110 dark:bg-gray-800 dark:hover:bg-gray-700 z-10"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-gray-600 dark:text-gray-300" />
+            <ChevronRight className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </motion.button>
 
           {/* Progress Indicator */}
-          <div className="flex justify-center mt-6 md:mt-8 space-x-2">
+          <div className="flex justify-center mt-8 space-x-2">
             {testimonials.map((_, index) => (
               <motion.button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-300 ${index === currentIndex
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentIndex
                   ? 'bg-primary-500 dark:bg-green-500 scale-125'
                   : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
                   }`}
